@@ -1,0 +1,48 @@
+import tensorflow as tf
+
+
+
+sess=tf.Session()
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.datasets import load_boston
+
+boston = load_boston()
+features = np.array(boston.data)
+labels = np.array(boston.target)
+n_training_samples = features.shape[0]
+n_dim = features.shape[1]
+
+
+def normalize(dataset):
+    mu = np.mean(dataset, axis=0)
+    sigma = np.std(dataset, axis=0)
+    return (dataset - mu) / sigma
+
+
+features_norm = normalize(features)
+train_x = np.transpose(features_norm)
+train_y = np.transpose(labels)
+train_y = train_y.reshape(1, len(train_y))
+X = tf.placeholder(tf.float32, [n_dim, None])
+Y = tf.placeholder(tf.float32, [1, None])
+learning_rate = tf.placeholder(tf.float32, shape=())
+W = tf.Variable(tf.ones([n_dim, 1]))
+b = tf.Variable(tf.zeros(1))
+init = tf.global_variables_initializer()
+y_ = tf.matmul(tf.transpose(W), X) + b
+cost = tf.reduce_mean(tf.square(y_ - Y))
+training_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
+sess = tf.Session()
+sess.run(init)
+cost_history = np.empty(shape=[0], dtype=float)
+training_epochs = 10000
+train_obs = train_x
+train_labels = train_y
+learning_r = 0.01
+for epoch in range(10000 + 1):
+    sess.run(training_step, feed_dict={X: train_x, Y: train_y, learning_rate: 0.01})
+    cost_ = sess.run(cost, feed_dict={X: train_x, Y: train_y, learning_rate: 0.01})
+    cost_history = np.append(cost_history, cost_)
+    if epoch % 1000 == 0:
+        print("Reached epoch", epoch, "cost J=", str.format('{0:.6f}', cost_))
